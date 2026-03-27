@@ -1,0 +1,69 @@
+{
+  "entities": {
+    "Note": {
+      "title": "Note",
+      "description": "A simple note document",
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "description": "The text content of the note"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the note was created"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who created the note"
+        }
+      },
+      "required": ["content", "createdAt", "userId"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "A client registration document",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full name of the client"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of the client"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the client"
+        },
+        "company": {
+          "type": "string",
+          "description": "Company name"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the client was registered"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who registered this client"
+        }
+      },
+      "required": ["name", "email", "createdAt", "userId"]
+    }
+  },
+  "firestore": {
+    "notes/{noteId}": {
+      "schema": "Note",
+      "description": "Collection of user notes"
+    },
+    "clients/{clientId}": {
+      "schema": "Client",
+      "description": "Collection of registered clients"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "Firebase & Supabase Explorer",
+  "description": "A starter app to explore database integrations with Firebase and Supabase.",
+  "requestFramePermissions": []
+}

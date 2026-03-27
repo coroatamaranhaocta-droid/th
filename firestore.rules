@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: notes
+    // Document ID: {noteId}
+    // Fields:
+    //   - content: string (required, 1-1000 chars)
+    //   - createdAt: timestamp (required)
+    //   - userId: string (required, must match auth.uid)
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidNote(data) {
+      return data.keys().hasAll(['content', 'createdAt', 'userId']) &&
+             data.keys().hasOnly(['content', 'createdAt', 'userId']) &&
+             data.content is string && data.content.size() > 0 && data.content.size() <= 1000 &&
+             data.createdAt is timestamp &&
+             data.userId == request.auth.uid;
+    }
+
+    function isValidClient(data) {
+      return data.keys().hasAll(['name', 'email', 'createdAt', 'userId']) &&
+             data.keys().hasOnly(['name', 'email', 'phone', 'company', 'createdAt', 'userId']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 20)) &&
+             (!('company' in data) || (data.company is string && data.company.size() <= 100)) &&
+             data.createdAt is timestamp &&
+             data.userId == request.auth.uid;
+    }
+
+    match /notes/{noteId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidNote(request.resource.data);
+      allow update: if isAuthenticated() && isOwner(resource.data.userId) && isValidNote(request.resource.data);
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+
+    match /clients/{clientId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidClient(request.resource.data);
+      allow update: if isAuthenticated() && isOwner(resource.data.userId) && isValidClient(request.resource.data);
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+  }
+}
